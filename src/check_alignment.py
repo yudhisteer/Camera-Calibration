@@ -9,7 +9,7 @@ class AlignmentChecker:
         self.checkerboard_size = checkerboard_size
         self.max_rotation_error = max_rotation_error
         self.max_scale_difference = max_scale_difference
-        plt.rcParams['figure.figsize'] = [12, 8]  # Set default figure size
+        plt.rcParams['figure.figsize'] = [12, 8]
 
 
     def draw_corners(self, image, corners, title="Corners"):
@@ -184,11 +184,11 @@ class AlignmentChecker:
         return corners, image
     
     def calculate_pattern_metrics(self, corners, image):
-        metrics = super_metrics = {
-            'min_x': np.min(corners[:,:,0]),
-            'max_x': np.max(corners[:,:,0]),
-            'min_y': np.min(corners[:,:,1]),
-            'max_y': np.max(corners[:,:,1])
+        metrics = {
+            'min_x': np.min(corners[:,:,0]), # Left
+            'max_x': np.max(corners[:,:,0]), # Right
+            'min_y': np.min(corners[:,:,1]), # Top
+            'max_y': np.max(corners[:,:,1])  # Bottom
         }
         
         # Calculate distances from edges

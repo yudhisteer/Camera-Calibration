@@ -5,11 +5,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class AlignmentChecker:
-    def __init__(self, checkerboard_size=(7,7), max_rotation_error=5.0, 
-                 max_center_offset=20, max_scale_difference=0.1):
+    def __init__(self, checkerboard_size=(7,7), max_rotation_error=5.0, max_scale_difference=0.1):
         self.checkerboard_size = checkerboard_size
         self.max_rotation_error = max_rotation_error
-        self.max_center_offset = max_center_offset
         self.max_scale_difference = max_scale_difference
         plt.rcParams['figure.figsize'] = [12, 8]  # Set default figure size
 
@@ -348,7 +346,6 @@ if __name__ == "__main__":
     checker = AlignmentChecker(
         checkerboard_size=(7,7),
         max_rotation_error=5.0,
-        max_center_offset=20,
         max_scale_difference=0.05
     )
     

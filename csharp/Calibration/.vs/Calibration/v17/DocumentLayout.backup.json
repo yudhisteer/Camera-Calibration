@@ -34,8 +34,7 @@
               "RelativeToolTip": "AlignmentVisualizer.cs",
               "ViewState": "AgIAAOYAAAAAAAAAAAAAwAEBAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-12-17T18:35:06.155Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-12-17T18:35:06.155Z"
             },
             {
               "$type": "Document",
@@ -47,8 +46,7 @@
               "RelativeToolTip": "AlignmentChecker.cs",
               "ViewState": "AgIAAOwAAAAAAAAAAAD4v6YAAABSAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-12-17T18:18:38.993Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-12-17T18:18:38.993Z"
             },
             {
               "$type": "Document",
@@ -56,9 +54,9 @@
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\v-ychintaram\\OneDrive - Microsoft\\Desktop\\__Project__\\Camera-Calibration\\csharp\\Calibration\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\v-ychintaram\\OneDrive - Microsoft\\Desktop\\__Project__\\Camera-Calibration\\csharp\\Calibration\\Program.cs*",
-              "RelativeToolTip": "Program.cs*",
-              "ViewState": "AgIAAAEAAAAAAAAAAAAqwBMAAACeAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\v-ychintaram\\OneDrive - Microsoft\\Desktop\\__Project__\\Camera-Calibration\\csharp\\Calibration\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAAAqwBMAAACVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-12-17T18:09:02.419Z",
               "EditorCaption": ""

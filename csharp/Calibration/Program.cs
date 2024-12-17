@@ -17,7 +17,7 @@ class Program
 
             // Define image paths
             string referenceImagePath = "C:\\Users\\v-ychintaram\\OneDrive - Microsoft\\Desktop\\__Project__\\Camera-Calibration\\csharp\\Calibration\\reference_screen.png";
-            string testImagePath = "C:\\Users\\v-ychintaram\\OneDrive - Microsoft\\Desktop\\__Project__\\Camera-Calibration\\csharp\\Calibration\\test_image11.png";
+            string testImagePath = "C:\\Users\\v-ychintaram\\OneDrive - Microsoft\\Desktop\\__Project__\\Camera-Calibration\\csharp\\Calibration\\ffc_2.jpg";
 
             // Run the alignment check
             var results = checker.CheckAlignment(referenceImagePath, testImagePath);

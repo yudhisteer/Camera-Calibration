@@ -13,9 +13,9 @@ def main():
     
     # Run the alignment check
     try:
-        results = checker.check_alignment('reference_screen.png', 'test_image.jpg')
-        print("\nDetailed Results Dictionary:")
-        print(results)
+        results = checker.check_alignment('reference_screen.png', 'ffc_2.jpg')
+        ##print("\nDetailed Results Dictionary:")
+        #print(results)
     except Exception as e:
         print(f"Error during alignment check: {str(e)}")
     finally:

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Calibration")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ad95bcf0dfe5914136b5ba754be5f3d6977e4980")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ec653c1c426f39ca4793c7439ecb4d3083684345")]
 [assembly: System.Reflection.AssemblyProductAttribute("Calibration")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Calibration")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

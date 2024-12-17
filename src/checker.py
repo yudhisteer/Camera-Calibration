@@ -154,6 +154,7 @@ class AlignmentChecker:
         
         return {**differences, **alignment_status, 'ref_metrics': ref_metrics, 'test_metrics': test_metrics, 'border_status': border_status}
 
+
     def _calculate_differences(self, ref_corners, test_corners, ref_metrics, test_metrics):
         """Calculate differences between reference and test images"""
         horizontal_diff = abs(ref_metrics['horizontal_ratio'] - test_metrics['horizontal_ratio'])
@@ -164,12 +165,26 @@ class AlignmentChecker:
         # Calculate rotation
         ref_top = ref_corners[0:self.checkerboard_size[1]]
         test_top = test_corners[0:self.checkerboard_size[1]]
-        ref_vector = ref_top[-1] - ref_top[0]
-        test_vector = test_top[-1] - test_top[0]
         
-        angle = np.arctan2(ref_vector[0][1], ref_vector[0][0]) - \
-                np.arctan2(test_vector[0][1], test_vector[0][0])
+        # Calculate vectors
+        ref_vector = ref_top[-1][0] - ref_top[0][0]
+        test_vector = test_top[-1][0] - test_top[0][0]
+        
+        # Check if vertical variation is larger than horizontal for test vector
+        test_dx = abs(test_vector[0])
+        test_dy = abs(test_vector[1])
+        if test_dy > test_dx:
+            # Swap x and y coordinates if detected vertically
+            test_vector = np.array([test_vector[1], test_vector[0]])
+        
+        print(f"Reference vector: {ref_vector}")
+        print(f"Test vector: {test_vector}")
+        
+        angle = np.arctan2(ref_vector[1], ref_vector[0]) - \
+                np.arctan2(test_vector[1], test_vector[0])
+        print(f"Angle: {angle}")
         rotation_error = np.abs(np.degrees(angle))
+        print(f"Rotation error: {rotation_error}")
         
         return {
             'horizontal_difference': horizontal_diff,
@@ -178,7 +193,7 @@ class AlignmentChecker:
             'height_ratio_difference': height_ratio_diff,
             'rotation_error': rotation_error
         }
-    
+
     def _check_alignment_status(self, differences):
         """Check alignment status against thresholds"""
         max_position_ratio_diff = 0.1

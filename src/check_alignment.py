@@ -151,6 +151,27 @@ class AlignmentChecker:
         rotation_error = np.abs(np.degrees(angle))
         
         # Define thresholds
+
+        # Reference Image:
+        # ┌──────────────────────┐
+        # │      ░░░░░░░░        │
+        # │   Checkerboard is    │
+        # │    in the center     │
+        # │      ░░░░░░░░        │
+        # └──────────────────────┘
+        # Left distance ≈ Right distance
+        # Ratio ≈ 0.5 (centered)
+
+        # Test Image (shifted right):
+        # ┌──────────────────────┐
+        # │            ░░░░░░░░  │
+        # │         Checkerboard │
+        # │         is shifted   │
+        # │            ░░░░░░░░  │
+        # └──────────────────────┘
+        # Left distance > Right distance
+        # Ratio ≈ 0.7 (not centered)
+
         max_position_ratio_diff = 0.1  # 10% difference in relative position
         
         # Check against thresholds

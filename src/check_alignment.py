@@ -1,95 +1,160 @@
+
+
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 class AlignmentChecker:
     def __init__(self, checkerboard_size=(7,7), max_rotation_error=5.0, 
                  max_center_offset=20, max_scale_difference=0.1):
-        """
-        Initialize the alignment checker
-        
-        Args:
-            checkerboard_size: Tuple of (rows, cols) of interior corners
-            max_rotation_error: Maximum allowed rotation in degrees
-            max_center_offset: Maximum allowed offset from center in pixels
-            max_scale_difference: Maximum allowed difference in relative size (0.1 = 10%)
-        """
         self.checkerboard_size = checkerboard_size
         self.max_rotation_error = max_rotation_error
         self.max_center_offset = max_center_offset
         self.max_scale_difference = max_scale_difference
+        plt.rcParams['figure.figsize'] = [12, 8]  # Set default figure size
+        
+    def draw_corners(self, image, corners, title="Corners"):
+        """Draw detected corners on the image"""
+        # Convert grayscale to RGB for colored visualization
+        vis_img = cv2.cvtColor(image.copy(), cv2.COLOR_GRAY2RGB)
+        
+        # Draw all corners in red
+        cv2.drawChessboardCorners(vis_img, self.checkerboard_size, corners, True)
+        
+        # Draw first and last corners of top row in different colors
+        top_row = corners[0:self.checkerboard_size[1]]
+        first_corner = tuple(map(int, top_row[0][0]))
+        last_corner = tuple(map(int, top_row[-1][0]))
+        
+        # Draw first corner in blue
+        cv2.circle(vis_img, first_corner, 10, (0, 0, 255), 2)  # BGR to RGB
+        cv2.putText(vis_img, "First", (first_corner[0]-20, first_corner[1]-10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+        
+        # Draw last corner in green
+        cv2.circle(vis_img, last_corner, 10, (0, 255, 0), 2)
+        cv2.putText(vis_img, "Last", (last_corner[0]-20, last_corner[1]-10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        
+        # Draw center point
+        center = np.mean(corners, axis=0)[0]
+        center = tuple(map(int, center))
+        cv2.circle(vis_img, center, 10, (255, 255, 0), 2)  # BGR to RGB
+        cv2.putText(vis_img, "Center", (center[0]-20, center[1]-10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 2)
+        
+        # Display with matplotlib
+        plt.figure(figsize=(12, 8))
+        plt.imshow(vis_img)
+        plt.title(title)
+        plt.axis('on')
+        plt.show()
+        
+        return vis_img
+
+    def draw_bounds(self, image, corners, metrics, title="Bounds"):
+        """Draw pattern bounds and measurements"""
+        vis_img = cv2.cvtColor(image.copy(), cv2.COLOR_GRAY2RGB)
+        
+        # Get bounds
+        min_x = int(np.min(corners[:,:,0]))
+        max_x = int(np.max(corners[:,:,0]))
+        min_y = int(np.min(corners[:,:,1]))
+        max_y = int(np.max(corners[:,:,1]))
+        
+        # Draw bounding box
+        cv2.rectangle(vis_img, (min_x, min_y), (max_x, max_y), (0, 255, 0), 2)
+        
+        # Draw center lines
+        h, w = image.shape
+        cv2.line(vis_img, (w//2, 0), (w//2, h), (255, 0, 0), 1)  # BGR to RGB
+        cv2.line(vis_img, (0, h//2), (w, h//2), (255, 0, 0), 1)  # BGR to RGB
+        
+        # Add measurements text
+        text_lines = [
+            f"Pattern Size: {metrics['pattern_width']:.1f} x {metrics['pattern_height']:.1f}",
+            f"Width Ratio: {metrics['width_ratio']:.3f}",
+            f"Height Ratio: {metrics['height_ratio']:.3f}",
+            f"Horizontal Ratio: {metrics['horizontal_ratio']:.3f}",
+            f"Vertical Ratio: {metrics['vertical_ratio']:.3f}"
+        ]
+        
+        for i, text in enumerate(text_lines):
+            cv2.putText(vis_img, text, (10, 30 + i*25),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+        
+        # Display with matplotlib
+        plt.figure(figsize=(12, 8))
+        plt.imshow(vis_img)
+        plt.title(title)
+        plt.axis('on')
+        plt.show()
+        
+        return vis_img
         
     def find_corners(self, image):
-        """Find checkerboard corners in an image"""
         if isinstance(image, str):
             image = cv2.imread(image, cv2.IMREAD_GRAYSCALE)
             
         if image is None:
             raise ValueError("Could not load image")
             
-        # Store image dimensions for center calculation
         self.image_height, self.image_width = image.shape
         
-        # Find the corners
+        # Show original image with matplotlib
+        plt.figure(figsize=(12, 8))
+        plt.imshow(image, cmap='gray')
+        plt.title("Original Image")
+        plt.axis('on')
+        plt.show()
+        
         ret, corners = cv2.findChessboardCorners(image, self.checkerboard_size, None)
         
         if not ret:
             raise ValueError("Could not find checkerboard corners in image")
             
-        # Refine corner positions
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
         corners = cv2.cornerSubPix(image, corners, (11,11), (-1,-1), criteria)
+        
+        # Visualize detected corners
+        vis_img = self.draw_corners(image, corners, "Detected Corners")
         
         return corners, image
     
     def calculate_pattern_metrics(self, corners, image):
-        """Calculate relative position and scale metrics of the checkerboard"""
-        # Calculate checkerboard bounds
-        min_x = np.min(corners[:,:,0])
-        max_x = np.max(corners[:,:,0])
-        min_y = np.min(corners[:,:,1])
-        max_y = np.max(corners[:,:,1])
-
-        # Log info
-        print(f"min_x: {min_x}, max_x: {max_x}, min_y: {min_y}, max_y: {max_y}")
+        metrics = super_metrics = {
+            'min_x': np.min(corners[:,:,0]),
+            'max_x': np.max(corners[:,:,0]),
+            'min_y': np.min(corners[:,:,1]),
+            'max_y': np.max(corners[:,:,1])
+        }
         
         # Calculate distances from edges
-        left_distance = min_x
-        right_distance = image.shape[1] - max_x # image width - max x
-        top_distance = min_y
-        bottom_distance = image.shape[0] - max_y # image height - max y
+        metrics['left_distance'] = metrics['min_x']
+        metrics['right_distance'] = image.shape[1] - metrics['max_x']
+        metrics['top_distance'] = metrics['min_y']
+        metrics['bottom_distance'] = image.shape[0] - metrics['max_y']
+        
+        # Calculate pattern dimensions
+        metrics['pattern_width'] = metrics['max_x'] - metrics['min_x']
+        metrics['pattern_height'] = metrics['max_y'] - metrics['min_y']
+        
+        # Calculate ratios
+        metrics['width_ratio'] = metrics['pattern_width'] / image.shape[1]
+        metrics['height_ratio'] = metrics['pattern_height'] / image.shape[0]
+        metrics['horizontal_ratio'] = metrics['left_distance'] / (metrics['left_distance'] + metrics['right_distance'])
+        metrics['vertical_ratio'] = metrics['top_distance'] / (metrics['top_distance'] + metrics['bottom_distance'])
+        
+        # Add image dimensions
+        metrics['image_width'] = image.shape[1]
+        metrics['image_height'] = image.shape[0]
+        
+        # Visualize bounds and measurements
+        vis_img = self.draw_bounds(image, corners, metrics, "Pattern Bounds")
+        
+        return metrics
 
-        # Log info
-        print(f"left_distance: {left_distance}, right_distance: {right_distance}, top_distance: {top_distance}, bottom_distance: {bottom_distance}")
-        
-        # Calculate pattern width and height
-        pattern_width = max_x - min_x
-        pattern_height = max_y - min_y
 
-        # Log info
-        print(f"pattern_width: {pattern_width}, pattern_height: {pattern_height}")
-        
-        # Calculate scale ratios (pattern size relative to image size)
-        width_ratio = pattern_width / image.shape[1]
-        height_ratio = pattern_height / image.shape[0]
-        
-        # Log info
-        print(f"width_ratio: {width_ratio}, height_ratio: {height_ratio}")
-        
-        # Calculate relative position ratios
-        horizontal_ratio = left_distance / (left_distance + right_distance)
-        vertical_ratio = top_distance / (top_distance + bottom_distance)
-        
-        return {
-            'horizontal_ratio': horizontal_ratio,
-            'vertical_ratio': vertical_ratio,
-            'width_ratio': width_ratio,
-            'height_ratio': height_ratio,
-            'pattern_width': pattern_width,
-            'pattern_height': pattern_height,
-            'image_width': image.shape[1],
-            'image_height': image.shape[0]
-        }
-    
     def check_alignment(self, reference_image_path, test_image_path):
         """Calculate alignment between reference and test images"""
         # Find corners in both images
@@ -214,13 +279,14 @@ class AlignmentChecker:
             'test_metrics': test_metrics
         }
 
+
 if __name__ == "__main__":
-    # Example usage
     checker = AlignmentChecker(
         checkerboard_size=(7,7),
-        max_rotation_error=5.0,       # 5 degrees
-        max_center_offset=20,         # 20 pixels
-        max_scale_difference=0.06      # 10% size difference tolerance
+        max_rotation_error=5.0,
+        max_center_offset=20,
+        max_scale_difference=0.06
     )
     
     results = checker.check_alignment('reference_screen.png', 'test_image.jpg')
+    cv2.destroyAllWindows()

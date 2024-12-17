@@ -13,7 +13,7 @@ def main():
     
     # Run the alignment check
     try:
-        results = checker.check_alignment('reference_screen.png', 'test_image11.png')
+        results = checker.check_alignment('reference_screen.png', 'test_image.jpg')
         print("\nDetailed Results Dictionary:")
         print(results)
     except Exception as e:

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -111,8 +112,16 @@ public class AlignmentChecker
         // Check alignment
         var alignmentStatus = CheckAlignmentStatus(differences);
 
-        // Print results
-        PrintAlignmentResults(differences, alignmentStatus, refMetrics, testMetrics);
+
+        // Add border check for test image
+        var borderStatus = CheckScreenBorders(testImage);
+
+        // Update alignment status to include border check
+        alignmentStatus["no_screen_borders"] = !Convert.ToBoolean(borderStatus["has_screen_borders"]);
+
+        // Update print results call
+        PrintAlignmentResults(differences, alignmentStatus, refMetrics, testMetrics, borderStatus);
+
 
         // Cleanup
         refImage.Dispose();
@@ -123,7 +132,8 @@ public class AlignmentChecker
             { "differences", differences },
             { "alignment_status", alignmentStatus },
             { "ref_metrics", refMetrics },
-            { "test_metrics", testMetrics }
+            { "test_metrics", testMetrics },
+            { "border_status", borderStatus }
         };
     }
 
@@ -153,6 +163,50 @@ public class AlignmentChecker
         };
     }
 
+
+    private Dictionary<string, object> CheckScreenBorders(Mat image, int threshold = 30)
+    {
+        //+------------------+Legend:
+        //| TTTTTTTTTTTTTTTTTT | T = Top border(20 pixels)
+        //| L                R | B = Bottom border(20 pixels)
+        //| L                R | L = Left border(20 pixels)
+        //| L          Image R | R = Right border(20 pixels)
+        //| L                R |
+        //| L                R | Each border is 20 pixels wide
+        //| L                R |
+        //| BBBBBBBBBBBBBBBBBB |
+        //+------------------+
+
+        int borderSize = 20;  // Number of pixels to check from each edge
+        var borders = new Dictionary<string, double>();
+
+        // Get edge regions and calculate mean intensities
+        using (var topBorder = new Mat(image, new Rectangle(0, 0, image.Width, borderSize)))
+        using (var bottomBorder = new Mat(image, new Rectangle(0, image.Height - borderSize, image.Width, borderSize)))
+        using (var leftBorder = new Mat(image, new Rectangle(0, 0, borderSize, image.Height)))
+        using (var rightBorder = new Mat(image, new Rectangle(image.Width - borderSize, 0, borderSize, image.Height)))
+        {
+            borders["top"] = CvInvoke.Mean(topBorder).V0;
+            borders["bottom"] = CvInvoke.Mean(bottomBorder).V0;
+            borders["left"] = CvInvoke.Mean(leftBorder).V0;
+            borders["right"] = CvInvoke.Mean(rightBorder).V0;
+        }
+
+        var borderStatus = new Dictionary<string, object>();
+
+        // Check if borders are too dark
+        foreach (var border in borders)
+        {
+            borderStatus[$"{border.Key}_border_visible"] = border.Value < threshold;
+            borderStatus[$"{border.Key}_intensity"] = border.Value;
+        }
+
+        // Overall status
+        borderStatus["has_screen_borders"] = borders.Any(b => b.Value < threshold);
+
+        return borderStatus;
+    }
+
     private Dictionary<string, bool> CheckAlignmentStatus(Dictionary<string, double> differences)
     {
         const double maxPositionRatioDiff = 0.1;
@@ -168,25 +222,47 @@ public class AlignmentChecker
     }
 
     private void PrintAlignmentResults(Dictionary<string, double> differences, Dictionary<string, bool> alignmentStatus,
-        Dictionary<string, float> refMetrics, Dictionary<string, float> testMetrics)
+        Dictionary<string, float> refMetrics, Dictionary<string, float> testMetrics, Dictionary<string, object> borderStatus)
     {
         Console.WriteLine("\nAlignment Check Results:");
 
+        Console.WriteLine("\nScreen Border Analysis:");
+
+        //✗ (X)means a border was detected(intensity below threshold of 30)
+        //✓ (√) means no border was detected(intensity above threshold of 30)
+
+        //0 = completely black
+        //255 = completely white
+
+        foreach (var direction in new[] { "top", "bottom", "left", "right" })
+        {
+            Console.WriteLine($"{char.ToUpper(direction[0]) + direction.Substring(1)} border intensity: " +
+                $"{Convert.ToDouble(borderStatus[$"{direction}_intensity"]):F1}");
+            Console.WriteLine($"{char.ToUpper(direction[0]) + direction.Substring(1)} border visible: " +
+                $"{(Convert.ToBoolean(borderStatus[$"{direction}_border_visible"]) ? "X" : "✓")}");
+        }
+
+        Console.WriteLine($"\nScreen Border Check: " +
+            $"{(Convert.ToBoolean(borderStatus["has_screen_borders"]) ? "X" : "✓")}");
+
+        bool isAlignedBorders = alignmentStatus.Values.All(v => v) && !Convert.ToBoolean(borderStatus["has_screen_borders"]);
+        Console.WriteLine($"Keystone Check Status: {(isAlignedBorders ? "PASS" : "FAIL")}");
+
         Console.WriteLine("\nPosition Analysis:");
         Console.WriteLine($"Horizontal alignment difference: {differences["horizontal_difference"]:F3} " +
-                        $"{(alignmentStatus["is_horizontal_aligned"] ? "✓" : "✗")}");
+                        $"{(alignmentStatus["is_horizontal_aligned"] ? "✓" : "X")}");
         Console.WriteLine($"Vertical alignment difference: {differences["vertical_difference"]:F3} " +
-                        $"{(alignmentStatus["is_vertical_aligned"] ? "✓" : "✗")}");
+                        $"{(alignmentStatus["is_vertical_aligned"] ? "✓" : "X")}");
 
         Console.WriteLine("\nScale Analysis:");
         Console.WriteLine($"Reference pattern/image width ratio: {refMetrics["width_ratio"]:F3}");
         Console.WriteLine($"Test pattern/image width ratio: {testMetrics["width_ratio"]:F3}");
         Console.WriteLine($"Width ratio difference: {differences["width_ratio_difference"]:F3}");
         Console.WriteLine($"Height ratio difference: {differences["height_ratio_difference"]:F3}");
-        Console.WriteLine($"Scale alignment: {(alignmentStatus["is_scale_aligned"] ? "✓" : "✗")}");
+        Console.WriteLine($"Scale alignment: {(alignmentStatus["is_scale_aligned"] ? "✓" : "X")}");
 
         Console.WriteLine($"\nRotation Error: {differences["rotation_error"]:F2}° " +
-                        $"{(alignmentStatus["is_rotation_aligned"] ? "✓" : "✗")}");
+                        $"{(alignmentStatus["is_rotation_aligned"] ? "✓" : "X")}");
 
         bool isAligned = alignmentStatus.Values.All(v => v);
         Console.WriteLine($"\nOverall Status: {(isAligned ? "PASS" : "FAIL")}");

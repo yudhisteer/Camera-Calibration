@@ -42,6 +42,55 @@ class AlignmentChecker:
         
         return corners, image
     
+
+    def _check_screen_borders(self, image, threshold=30):
+        """
+        Check for dark borders in the image that might indicate monitor bezels.
+        
+        Args:
+            image: Grayscale image
+            threshold: Pixel intensity threshold below which we consider it "dark" (0-255)
+            
+        Returns:
+            Dictionary containing border metrics and detection results
+        """
+        h, w = image.shape
+        border_size = 20  # Number of pixels to check from each edge
+        
+        # Get edge regions
+        top_border = image[0:border_size, :]
+        bottom_border = image[-border_size:, :]
+        left_border = image[:, 0:border_size]
+        right_border = image[:, -border_size:]
+        
+        # Calculate average intensities
+        borders = {
+            'top': np.mean(top_border),
+            'bottom': np.mean(bottom_border),
+            'left': np.mean(left_border),
+            'right': np.mean(right_border)
+        }
+        
+        # Check if any border is too dark
+        border_status = {
+            f'{key}_border_visible': value < threshold 
+            for key, value in borders.items()
+        }
+        
+        # Add average intensities to the results
+        border_status.update({
+            f'{key}_intensity': value 
+            for key, value in borders.items()
+        })
+        
+        # Overall status
+        border_status['has_screen_borders'] = any(
+            value for key, value in border_status.items() 
+            if key.endswith('_visible')
+        )
+        
+        return border_status
+    
     def calculate_pattern_metrics(self, corners, image):
         """Calculate pattern metrics from corners"""
         metrics = self._calculate_basic_metrics(corners, image)
@@ -88,17 +137,22 @@ class AlignmentChecker:
         # Calculate metrics
         ref_metrics = self.calculate_pattern_metrics(ref_corners, ref_image)
         test_metrics = self.calculate_pattern_metrics(test_corners, test_image)
+
+        # Add border check for test image
+        border_status = self._check_screen_borders(test_image)
         
         # Calculate differences
         differences = self._calculate_differences(ref_corners, test_corners, ref_metrics, test_metrics)
         
         # Check alignment
+        # Check alignment including border check
         alignment_status = self._check_alignment_status(differences)
+        alignment_status['no_screen_borders'] = not border_status['has_screen_borders']
         
         # Print results
-        self._print_alignment_results(differences, alignment_status, ref_metrics, test_metrics)
+        self._print_alignment_results(differences, alignment_status, ref_metrics, test_metrics, border_status)
         
-        return {**differences, **alignment_status, 'ref_metrics': ref_metrics, 'test_metrics': test_metrics}
+        return {**differences, **alignment_status, 'ref_metrics': ref_metrics, 'test_metrics': test_metrics, 'border_status': border_status}
 
     def _calculate_differences(self, ref_corners, test_corners, ref_metrics, test_metrics):
         """Calculate differences between reference and test images"""
@@ -139,8 +193,16 @@ class AlignmentChecker:
             ),
         }
 
-    def _print_alignment_results(self, differences, alignment_status, ref_metrics, test_metrics):
+    def _print_alignment_results(self, differences, alignment_status, ref_metrics, test_metrics, border_status):
         """Print detailed alignment results"""
+
+        print("\nScreen Border Analysis:")
+        for direction in ['top', 'bottom', 'left', 'right']:
+            print(f"{direction.capitalize()} border intensity: {border_status[f'{direction}_intensity']:.1f}")
+            print(f"{direction.capitalize()} border visible: {'✗' if border_status[f'{direction}_border_visible'] else '✓'}")
+        
+        print(f"\nScreen Border Check: {'✓' if not border_status['has_screen_borders'] else '✗'}")
+
         print("\nAlignment Check Results:")
         print("\nPosition Analysis:")
         print(f"Horizontal alignment difference: {differences['horizontal_difference']:.3f} "

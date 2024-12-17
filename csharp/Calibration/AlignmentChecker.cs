@@ -138,7 +138,7 @@ public class AlignmentChecker
     }
 
     private Dictionary<string, double> CalculateDifferences(PointF[] refCorners, PointF[] testCorners,
-        Dictionary<string, float> refMetrics, Dictionary<string, float> testMetrics)
+    Dictionary<string, float> refMetrics, Dictionary<string, float> testMetrics)
     {
         double horizontalDiff = Math.Abs(refMetrics["horizontal_ratio"] - testMetrics["horizontal_ratio"]);
         double verticalDiff = Math.Abs(refMetrics["vertical_ratio"] - testMetrics["vertical_ratio"]);
@@ -149,19 +149,36 @@ public class AlignmentChecker
         var refTop = refCorners.Take(checkerboardSize.Width).ToArray();
         var testTop = testCorners.Take(checkerboardSize.Width).ToArray();
 
-        double refAngle = Math.Atan2(refTop.Last().Y - refTop[0].Y, refTop.Last().X - refTop[0].X);
-        double testAngle = Math.Atan2(testTop.Last().Y - testTop[0].Y, testTop.Last().X - testTop[0].X);
+        // Calculate vectors
+        float refDx = refTop.Last().X - refTop[0].X;
+        float refDy = refTop.Last().Y - refTop[0].Y;
+        float testDx = testTop.Last().X - testTop[0].X;
+        float testDy = testTop.Last().Y - testTop[0].Y;
+
+        // Check if vertical variation is larger than horizontal for test vector
+        if (Math.Abs(testDy) > Math.Abs(testDx))
+        {
+            // Swap dx and dy if detected vertically
+            float temp = testDx;
+            testDx = testDy;
+            testDy = temp;
+        }
+
+        double refAngle = Math.Atan2(refDy, refDx);
+        double testAngle = Math.Atan2(testDy, testDx);
         double rotationError = Math.Abs(refAngle - testAngle) * 180 / Math.PI;
 
         return new Dictionary<string, double>
-        {
-            { "horizontal_difference", horizontalDiff },
-            { "vertical_difference", verticalDiff },
-            { "width_ratio_difference", widthRatioDiff },
-            { "height_ratio_difference", heightRatioDiff },
-            { "rotation_error", rotationError }
+    {
+        { "horizontal_difference", horizontalDiff },
+        { "vertical_difference", verticalDiff },
+        { "width_ratio_difference", widthRatioDiff },
+        { "height_ratio_difference", heightRatioDiff },
+        { "rotation_error", rotationError }
+    
         };
     }
+
 
 
     private Dictionary<string, object> CheckScreenBorders(Mat image, int threshold = 30)

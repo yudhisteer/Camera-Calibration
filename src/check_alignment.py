@@ -48,20 +48,32 @@ class AlignmentChecker:
         max_x = np.max(corners[:,:,0])
         min_y = np.min(corners[:,:,1])
         max_y = np.max(corners[:,:,1])
+
+        # Log info
+        print(f"min_x: {min_x}, max_x: {max_x}, min_y: {min_y}, max_y: {max_y}")
         
         # Calculate distances from edges
         left_distance = min_x
-        right_distance = image.shape[1] - max_x
+        right_distance = image.shape[1] - max_x # image width - max x
         top_distance = min_y
-        bottom_distance = image.shape[0] - max_y
+        bottom_distance = image.shape[0] - max_y # image height - max y
+
+        # Log info
+        print(f"left_distance: {left_distance}, right_distance: {right_distance}, top_distance: {top_distance}, bottom_distance: {bottom_distance}")
         
         # Calculate pattern width and height
         pattern_width = max_x - min_x
         pattern_height = max_y - min_y
+
+        # Log info
+        print(f"pattern_width: {pattern_width}, pattern_height: {pattern_height}")
         
         # Calculate scale ratios (pattern size relative to image size)
         width_ratio = pattern_width / image.shape[1]
         height_ratio = pattern_height / image.shape[0]
+        
+        # Log info
+        print(f"width_ratio: {width_ratio}, height_ratio: {height_ratio}")
         
         # Calculate relative position ratios
         horizontal_ratio = left_distance / (left_distance + right_distance)
@@ -83,10 +95,16 @@ class AlignmentChecker:
         # Find corners in both images
         ref_corners, ref_image = self.find_corners(reference_image_path)
         test_corners, test_image = self.find_corners(test_image_path)
+
+        # Log info
+        #print(f"ref_corners: {ref_corners}, test_corners: {test_corners}")
         
         # Calculate metrics for both images
         ref_metrics = self.calculate_pattern_metrics(ref_corners, ref_image)
         test_metrics = self.calculate_pattern_metrics(test_corners, test_image)
+        
+        # Log info
+        print(f"ref_metrics: {ref_metrics}, test_metrics: {test_metrics}")
         
         # Calculate differences
         horizontal_diff = abs(ref_metrics['horizontal_ratio'] - test_metrics['horizontal_ratio'])
@@ -95,11 +113,38 @@ class AlignmentChecker:
         height_ratio_diff = abs(ref_metrics['height_ratio'] - test_metrics['height_ratio'])
         
         # Calculate rotation
-        ref_top = ref_corners[0:self.checkerboard_size[1]]
+        ref_top = ref_corners[0:self.checkerboard_size[1]] 
         test_top = test_corners[0:self.checkerboard_size[1]]
+
+        # Log info
+        print(f"ref_top: {ref_top}, test_top: {test_top}")
+
+
+        #     First corner (0)          Last corner (-1)
+        #      ↓                         ↓
+        # •----•----•----•----•----•----•    
+        # |    |    |    |    |    |    |
+        # |    |    |    |    |    |    |
+        
+        # Vector = Last corner - First corner
+        # →→→→→→→→→→→→→→→→→→→→→→→→→→→→→→
+
+
+
+        #     First corner       Last corner
+        #      ↓                ↓
+        # •----•----•----•----•----•----•
+        #  \    \    \    \    \    \    \
+        #   \    \    \    \    \    \    \
+        
+        # Vector shows the tilted angle
+        # ↗↗↗↗↗↗↗↗↗↗↗↗↗↗↗↗↗↗↗↗↗↗↗↗↗↗↗↗↗
         
         ref_vector = ref_top[-1] - ref_top[0]
         test_vector = test_top[-1] - test_top[0]
+
+        # Log info
+        print(f"ref_vector: {ref_vector}, test_vector: {test_vector}")
         
         angle = np.arctan2(ref_vector[0][1], ref_vector[0][0]) - \
                 np.arctan2(test_vector[0][1], test_vector[0][0])
@@ -115,8 +160,7 @@ class AlignmentChecker:
         is_scale_aligned = (width_ratio_diff <= self.max_scale_difference and 
                           height_ratio_diff <= self.max_scale_difference)
         
-        is_aligned = (is_horizontal_aligned and is_vertical_aligned and 
-                     is_rotation_aligned and is_scale_aligned)
+        is_aligned = (is_horizontal_aligned and is_vertical_aligned and is_rotation_aligned and is_scale_aligned)
         
         # Print detailed results
         print("\nAlignment Check Results:")
@@ -158,4 +202,4 @@ if __name__ == "__main__":
         max_scale_difference=0.06      # 10% size difference tolerance
     )
     
-    results = checker.check_alignment('reference_screen.png', 'test_image11.png')
+    results = checker.check_alignment('reference_screen.png', 'test_image.jpg')

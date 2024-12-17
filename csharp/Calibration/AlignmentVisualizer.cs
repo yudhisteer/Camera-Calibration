@@ -236,11 +236,25 @@ public class AlignmentVisualizer
         return flat;
     }
 
+
     private void ShowImage(Mat image, string title)
     {
-        // Replace spaces with underscores for filename
+        // Create a smaller display image
+        Mat displayImage = new Mat();
+        Size displaySize = new Size(800, 600);
+        CvInvoke.Resize(image, displayImage, displaySize);
+
+        // Show image in window
+        CvInvoke.NamedWindow(title, WindowFlags.Normal);
+        CvInvoke.Imshow(title, displayImage);
+        CvInvoke.WaitKey(1); // Update the window
+
+        // Save the original (non-resized) image
         string filename = title.Replace(" ", "_") + ".png";
         image.Save(filename);
         Console.WriteLine($"Saved image to {filename}");
+
+        // Clean up
+        displayImage.Dispose();
     }
 }

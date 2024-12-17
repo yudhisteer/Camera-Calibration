@@ -3,8 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\v-ychintaram\\OneDrive - Microsoft\\Desktop\\__Project__\\Camera-Calibration\\csharp\\Calibration\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{012B03A2-A29E-4495-9C82-94E3DDDB6615}|Calibration.csproj|c:\\users\\v-ychintaram\\onedrive - microsoft\\desktop\\__project__\\camera-calibration\\csharp\\calibration\\alignmentvisualizer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{012B03A2-A29E-4495-9C82-94E3DDDB6615}|Calibration.csproj|solutionrelative:alignmentvisualizer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{012B03A2-A29E-4495-9C82-94E3DDDB6615}|Calibration.csproj|c:\\users\\v-ychintaram\\onedrive - microsoft\\desktop\\__project__\\camera-calibration\\csharp\\calibration\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{012B03A2-A29E-4495-9C82-94E3DDDB6615}|Calibration.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{012B03A2-A29E-4495-9C82-94E3DDDB6615}|Calibration.csproj|c:\\users\\v-ychintaram\\onedrive - microsoft\\desktop\\__project__\\camera-calibration\\csharp\\calibration\\alignmentchecker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{012B03A2-A29E-4495-9C82-94E3DDDB6615}|Calibration.csproj|solutionrelative:alignmentchecker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -19,12 +27,38 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "AlignmentVisualizer.cs",
+              "DocumentMoniker": "C:\\Users\\v-ychintaram\\OneDrive - Microsoft\\Desktop\\__Project__\\Camera-Calibration\\csharp\\Calibration\\AlignmentVisualizer.cs",
+              "RelativeDocumentMoniker": "AlignmentVisualizer.cs",
+              "ToolTip": "C:\\Users\\v-ychintaram\\OneDrive - Microsoft\\Desktop\\__Project__\\Camera-Calibration\\csharp\\Calibration\\AlignmentVisualizer.cs",
+              "RelativeToolTip": "AlignmentVisualizer.cs",
+              "ViewState": "AgIAAOYAAAAAAAAAAAAAwPMAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-12-17T18:35:06.155Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AlignmentChecker.cs",
+              "DocumentMoniker": "C:\\Users\\v-ychintaram\\OneDrive - Microsoft\\Desktop\\__Project__\\Camera-Calibration\\csharp\\Calibration\\AlignmentChecker.cs",
+              "RelativeDocumentMoniker": "AlignmentChecker.cs",
+              "ToolTip": "C:\\Users\\v-ychintaram\\OneDrive - Microsoft\\Desktop\\__Project__\\Camera-Calibration\\csharp\\Calibration\\AlignmentChecker.cs",
+              "RelativeToolTip": "AlignmentChecker.cs",
+              "ViewState": "AgIAAJ4AAAAAAAAAAAAAAAsAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-12-17T18:18:38.993Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\v-ychintaram\\OneDrive - Microsoft\\Desktop\\__Project__\\Camera-Calibration\\csharp\\Calibration\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\Users\\v-ychintaram\\OneDrive - Microsoft\\Desktop\\__Project__\\Camera-Calibration\\csharp\\Calibration\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAADoAAAAAAAAAAAAQwBMAAACiAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABwAAAApAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-12-17T18:09:02.419Z",
               "EditorCaption": ""

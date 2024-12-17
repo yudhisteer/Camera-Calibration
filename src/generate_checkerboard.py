@@ -54,7 +54,7 @@ class CheckerboardDisplay:
         def auto_capture():
             # Wait for window to be fully displayed
             root.update()
-            time.sleep(2)  # Give time for the window to settle
+            time.sleep(5)  # Give time for the window to settle
             
             # Capture the screen
             screenshot = pyautogui.screenshot()

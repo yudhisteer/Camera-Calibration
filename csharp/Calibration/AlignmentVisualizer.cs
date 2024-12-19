@@ -192,6 +192,7 @@ public class AlignmentVisualizer
         }
     }
 
+    // Transpose
     private PointF[] ReshapeCorners(PointF[] corners, bool transpose = false)
     {
         var grid = ReshapeToGrid(corners);
@@ -206,6 +207,7 @@ public class AlignmentVisualizer
         return corners;
     }
 
+    // mirror corners horizontally
     private PointF[] FlipCornersHorizontally(PointF[] corners)
     {
         var grid = ReshapeToGrid(corners);
@@ -216,6 +218,7 @@ public class AlignmentVisualizer
         return FlattenGrid(flipped);
     }
 
+    // 1D <-> 2D array conversion
     private PointF[,] ReshapeToGrid(PointF[] corners)
     {
         var grid = new PointF[checkerboardSize.Height, checkerboardSize.Width];
@@ -225,6 +228,7 @@ public class AlignmentVisualizer
         return grid;
     }
 
+    // 2D <-> 1D array conversion
     private PointF[] FlattenGrid(PointF[,] grid)
     {
         int rows = grid.GetLength(0);
@@ -236,25 +240,33 @@ public class AlignmentVisualizer
         return flat;
     }
 
-
     private void ShowImage(Mat image, string title)
     {
-        // Create a smaller display image
-        Mat displayImage = new Mat();
-        Size displaySize = new Size(800, 600);
-        CvInvoke.Resize(image, displayImage, displaySize);
-
-        // Show image in window
-        CvInvoke.NamedWindow(title, WindowFlags.Normal);
-        CvInvoke.Imshow(title, displayImage);
-        CvInvoke.WaitKey(1); // Update the window
-
-        // Save the original (non-resized) image
+        // Save the original image
         string filename = title.Replace(" ", "_") + ".png";
         image.Save(filename);
         Console.WriteLine($"Saved image to {filename}");
-
-        // Clean up
-        displayImage.Dispose();
     }
+
+
+    //private void ShowImage(Mat image, string title)
+    //{
+    //    // Create a smaller display image
+    //    Mat displayImage = new Mat();
+    //    Size displaySize = new Size(800, 600);
+    //    CvInvoke.Resize(image, displayImage, displaySize);
+
+    //    // Show image in window
+    //    CvInvoke.NamedWindow(title, WindowFlags.Normal);
+    //    CvInvoke.Imshow(title, displayImage);
+    //    CvInvoke.WaitKey(1); // Update the window
+
+    //    // Save the original (non-resized) image
+    //    string filename = title.Replace(" ", "_") + ".png";
+    //    image.Save(filename);
+    //    Console.WriteLine($"Saved image to {filename}");
+
+    //    // Clean up
+    //    displayImage.Dispose();
+    //}
 }

@@ -25,7 +25,7 @@ public class AlignmentChecker
 
     public (PointF[] corners, Mat image) FindCorners(string imagePath)
     {
-        // Load image
+        // load image in grayscale
         Mat image = CvInvoke.Imread(imagePath, ImreadModes.Grayscale);
         if (image.IsEmpty)
         {
@@ -35,11 +35,11 @@ public class AlignmentChecker
         imageHeight = image.Height;
         imageWidth = image.Width;
 
-        // Save original image
-        image.Save("Original_Image.png");
-        Console.WriteLine("Saved original image to Original_Image.png");
+        // // save image
+        // image.Save("Original_Image.png");
+        // Console.WriteLine("Saved original image to Original_Image.png");
 
-        // Find corners
+        // find corners
         VectorOfPointF corners = new VectorOfPointF();
         bool found = CvInvoke.FindChessboardCorners(image, checkerboardSize, corners);
 
@@ -48,11 +48,11 @@ public class AlignmentChecker
             throw new InvalidOperationException("Could not find checkerboard corners in image");
         }
 
-        // Refine corner positions
+        // refine corner positions - 30 iter, criteria 0.001 px
         MCvTermCriteria criteria = new MCvTermCriteria(30, 0.001);
         CvInvoke.CornerSubPix(image, corners, new Size(11, 11), new Size(-1, -1), criteria);
 
-        // Visualize detected corners
+        // visualize detected corners
         PointF[] cornerPoints = corners.ToArray();
         visualizer.DrawCorners(image, cornerPoints, "Detected_Corners");
 
@@ -77,7 +77,7 @@ public class AlignmentChecker
             { "max_y", corners.Max(c => c.Y) }
         };
 
-        // Calculate distances and dimensions
+        // calc distances and dimensions
         metrics.Add("left_distance", metrics["min_x"]);
         metrics.Add("right_distance", image.Width - metrics["max_x"]);
         metrics.Add("top_distance", metrics["min_y"]);
@@ -85,7 +85,7 @@ public class AlignmentChecker
         metrics.Add("pattern_width", metrics["max_x"] - metrics["min_x"]);
         metrics.Add("pattern_height", metrics["max_y"] - metrics["min_y"]);
 
-        // Calculate ratios
+        // calc ratios
         metrics.Add("width_ratio", metrics["pattern_width"] / image.Width);
         metrics.Add("height_ratio", metrics["pattern_height"] / image.Height);
         metrics.Add("horizontal_ratio", metrics["left_distance"] / (metrics["left_distance"] + metrics["right_distance"]));
@@ -98,32 +98,26 @@ public class AlignmentChecker
 
     public Dictionary<string, object> CheckAlignment(string referenceImagePath, string testImagePath)
     {
-        // Find corners in both images
+        // find corners in both images
         var (refCorners, refImage) = FindCorners(referenceImagePath);
         var (testCorners, testImage) = FindCorners(testImagePath);
 
-        // Calculate metrics
+        //  metrics
         var refMetrics = CalculatePatternMetrics(refCorners, refImage);
         var testMetrics = CalculatePatternMetrics(testCorners, testImage);
 
-        // Calculate differences
+        //  differences
         var differences = CalculateDifferences(refCorners, testCorners, refMetrics, testMetrics);
 
-        // Check alignment
+        // check alignment
         var alignmentStatus = CheckAlignmentStatus(differences);
 
 
-        // Add border check for test image
+        //  border check for test image and print
         var borderStatus = CheckScreenBorders(testImage);
-
-        // Update alignment status to include border check
         alignmentStatus["no_screen_borders"] = !Convert.ToBoolean(borderStatus["has_screen_borders"]);
-
-        // Update print results call
         PrintAlignmentResults(differences, alignmentStatus, refMetrics, testMetrics, borderStatus);
 
-
-        // Cleanup
         refImage.Dispose();
         testImage.Dispose();
 
@@ -145,17 +139,17 @@ public class AlignmentChecker
         double widthRatioDiff = Math.Abs(refMetrics["width_ratio"] - testMetrics["width_ratio"]);
         double heightRatioDiff = Math.Abs(refMetrics["height_ratio"] - testMetrics["height_ratio"]);
 
-        // Calculate rotation
+        // takes top row of corners
         var refTop = refCorners.Take(checkerboardSize.Width).ToArray();
         var testTop = testCorners.Take(checkerboardSize.Width).ToArray();
 
-        // Calculate vectors
+        // calc vectors from first and last corner
         float refDx = refTop.Last().X - refTop[0].X;
         float refDy = refTop.Last().Y - refTop[0].Y;
         float testDx = testTop.Last().X - testTop[0].X;
         float testDy = testTop.Last().Y - testTop[0].Y;
 
-        // Check if vertical variation is larger than horizontal for test vector
+        // check if vertical variation is larger than horizontal for test vector
         if (Math.Abs(testDy) > Math.Abs(testDx))
         {
             // Swap dx and dy if detected vertically
@@ -164,6 +158,7 @@ public class AlignmentChecker
             testDy = temp;
         }
 
+        // angle calc
         double refAngle = Math.Atan2(refDy, refDx);
         double testAngle = Math.Atan2(testDy, testDx);
         double rotationError = Math.Abs(refAngle - testAngle) * 180 / Math.PI;
@@ -183,21 +178,12 @@ public class AlignmentChecker
 
     private Dictionary<string, object> CheckScreenBorders(Mat image, int threshold = 30)
     {
-        //+------------------+Legend:
-        //| TTTTTTTTTTTTTTTTTT | T = Top border(20 pixels)
-        //| L                R | B = Bottom border(20 pixels)
-        //| L                R | L = Left border(20 pixels)
-        //| L          Image R | R = Right border(20 pixels)
-        //| L                R |
-        //| L                R | Each border is 20 pixels wide
-        //| L                R |
-        //| BBBBBBBBBBBBBBBBBB |
-        //+------------------+
 
-        int borderSize = 20;  // Number of pixels to check from each edge
+        // no. of pixels to check from each edge
+        int borderSize = 20;  
         var borders = new Dictionary<string, double>();
 
-        // Get edge regions and calculate mean intensities
+        // get edge regions and calculate mean
         using (var topBorder = new Mat(image, new Rectangle(0, 0, image.Width, borderSize)))
         using (var bottomBorder = new Mat(image, new Rectangle(0, image.Height - borderSize, image.Width, borderSize)))
         using (var leftBorder = new Mat(image, new Rectangle(0, 0, borderSize, image.Height)))
@@ -211,14 +197,14 @@ public class AlignmentChecker
 
         var borderStatus = new Dictionary<string, object>();
 
-        // Check if borders are too dark
+        // check if borders are too dark
         foreach (var border in borders)
         {
             borderStatus[$"{border.Key}_border_visible"] = border.Value < threshold;
             borderStatus[$"{border.Key}_intensity"] = border.Value;
         }
 
-        // Overall status
+        // status
         borderStatus["has_screen_borders"] = borders.Any(b => b.Value < threshold);
 
         return borderStatus;
@@ -245,11 +231,11 @@ public class AlignmentChecker
 
         Console.WriteLine("\nScreen Border Analysis:");
 
-        //✗ (X)means a border was detected(intensity below threshold of 30)
-        //✓ (√) means no border was detected(intensity above threshold of 30)
+        //(X) means a border was detected(intensity below threshold of 30)
+        //(✓) means NO border was detected(intensity above threshold of 30)
 
-        //0 = completely black
-        //255 = completely white
+        //0 =  black
+        //255 =  white
 
         foreach (var direction in new[] { "top", "bottom", "left", "right" })
         {

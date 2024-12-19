@@ -40,8 +40,7 @@ class AlignmentChecker:
         # Visualize detected corners
         self.visualizer.draw_corners(image, corners, "Detected Corners")
         
-        return corners, image
-    
+        return corners, image  
 
     def _check_screen_borders(self, image, threshold=30):
         """
@@ -153,7 +152,6 @@ class AlignmentChecker:
         self._print_alignment_results(differences, alignment_status, ref_metrics, test_metrics, border_status)
         
         return {**differences, **alignment_status, 'ref_metrics': ref_metrics, 'test_metrics': test_metrics, 'border_status': border_status}
-
 
     def _calculate_differences(self, ref_corners, test_corners, ref_metrics, test_metrics):
         """Calculate differences between reference and test images"""

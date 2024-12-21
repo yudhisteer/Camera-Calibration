@@ -70,7 +70,6 @@ public class AlignmentVisualizer
         DrawMarkers(visImg, firstPoint, lastPoint, corners);
         DrawConnections(visImg, corners);
 
-        // Display image
         ShowImage(visImg, title);
 
         return visImg;
